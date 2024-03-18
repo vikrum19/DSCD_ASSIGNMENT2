@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package raft;
+
+// The Raft service definition.
+service RaftService {
+  // Sends a vote request to other nodes.
+  rpc RequestVote (VoteRequest) returns (VoteResponse) {}
+
+  // Appends entries to the log (used for both log replication and heartbeats).
+  rpc AppendEntries (AppendEntriesRequest) returns (AppendEntriesResponse) {}
+
+  // Client's Set request.
+  rpc Set (SetRequest) returns (SetResponse) {}
+
+  // Client's Get request.
+  rpc Get (GetRequest) returns (GetResponse) {}
+}
+
+// Message for requesting votes.
+message VoteRequest {
+  int32 term = 1;
+  int32 candidateId = 2;
+  int32 lastLogIndex = 3;
+  int32 lastLogTerm = 4;
+}
+
+// Message for responding to vote requests.
+message VoteResponse {
+  int32 term = 1;
+  bool voteGranted = 2;
+  string leaderAddress = 3; // For leader lease
+}
+
+// Message for appending entries to the log.
+message AppendEntriesRequest {
+  int32 term = 1;
+  int32 leaderId = 2;
+  int32 prevLogIndex = 3;
+  int32 prevLogTerm = 4;
+  repeated LogEntry entries = 5;
+  int32 leaderCommit = 6;
+  int32 leaseDuration = 7; // For leader lease
+}
+
+// Message for responding to append entries requests.
+message AppendEntriesResponse {
+  int32 term = 1;
+  bool success = 2;
+}
+
+// Log entry message.
+message LogEntry {
+  int32 term = 1;
+  string key = 2;
+  string value = 3;
+}
+
+// Set request from clients.
+message SetRequest {
+  string key = 1;
+  string value = 2;
+}
+
+// Set response to clients.
+message SetResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Get request from clients.
+message GetRequest {
+  string key = 1;
+}
+
+// Get response to clients.
+message GetResponse {
+  bool success = 1;
+  string value = 2;
+  string message = 3;
+}
